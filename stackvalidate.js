@@ -35,7 +35,7 @@ function checkStack(text)
         stack = [],      // our pair stack (we'll only store openers)
         lines = [],      // our line-number-for-opening-operator
         line=1,
-        error='';
+        error=[];
 
     // let's go!
     for(c=0; c<len; c++)
@@ -63,7 +63,7 @@ function checkStack(text)
             window.console.log("[cl] "+chr+", stack: ["+stack+"]");
             top = peek(stack);
             if(top === undefined) {
-                error = "ERROR: saw a "+chr+" on line "+line+" that shouldn't be there.";
+                error.push("ERROR: saw a "+chr+" on line "+line+" that shouldn't be there.");
                 stack.push("dummyvalue");
                 break;
             }
@@ -72,6 +72,7 @@ function checkStack(text)
                 if(chr===exclusives[exclusively] && top===chr) {
                     exclusively = -1;
                     pop(stack);
+                    pop(lines);
                 } else {
                     continue;
                 }
@@ -80,8 +81,9 @@ function checkStack(text)
                 op = openers[cl];
                 if(top===op) {
                     pop(stack);
+                    pop(lines);
                 } else {
-                    error = "ERROR: expected to close pair for "+top+", opened on line "+lines[stack.length]+", found "+chr+" instead, on line "+line;
+                    error.push("ERROR: expected to close pair for "+top+", opened on line "+lines[stack.length]+" (snippet: "+text.substring(lines[stack.length]-10, lines[stack.length]+10)+"), found "+chr+" instead, on line "+line);
                     break;
                 }
             }
@@ -89,18 +91,18 @@ function checkStack(text)
         if(chr==="\n") { line++; }
     }
 
-    if(error==='') {
+    if(error.length===0) {
         if(stack.length===0) {
-            error = "Your stack was checked, and caught no flack!";
+            error.push("Your stack was checked, and caught no flack!");
         } else {
             var stl = stack.length;
-            error = "ERROR: stack still contains "+(stl===1 ? "an" : stl)+" unclosed pair"+(stl===1?'':'s');
+            error.push("ERROR: stack still contains "+(stl===1 ? "an" : stl)+" unclosed pair"+(stl===1?'':'s') + " (unclosed pairs start at: "+lines.join(',')+" )");
         }
     }
 
     var stack_color = (stack.length>0 ? "#600" : "#090");
     document.querySelector('#checkit').style.backgroundColor = stack_color;
-    document.querySelector('#checkit').title = error;
+    document.querySelector('#checkit').title = error.join("\n");
 }
 
 function space(array) {

@@ -1,0 +1,23 @@
+Do you hate not knowing why some code refuses to compile because there's
+"some" error with it, but your thingakajigger can't accurately tell you
+where things went wrong? (Like, say, you're writing Processing code)
+
+Use this.
+
+It'll help you at least identify where things might potentially be wrong
+by flagging still open or closed-before-expected pairs of '', "", [], {}
+and (). It doesn't do semi-colon checks because at this point there are
+two kinds of people in the world: those that appreciate the rigidity
+of semi-colons, and those that think they're a blight upon the programming
+world and they should never exist! (these people also think whitespace
+is semantic).
+
+There's also a third kind of person in this world who looks at the previous
+statement and goes "I don't live in your world", and semi-colon detection
+isn't in there for those people. I don't know what language(s) you use,
+and not all of them use semi's.
+
+Anyway, try your code, see what it does. If you think the validator needs
+more functionality, let me know. We can add this.
+
+License: this code is trivial. I don't care what you do with it =)
