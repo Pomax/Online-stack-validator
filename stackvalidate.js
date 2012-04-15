@@ -5,8 +5,20 @@
  *
  * - Mike "Pomax" Kamermans
  */
+
+var debug = false;
+
+function log(s) {
+  if(debug) window.console.log(s);
+}
+
 function checkStack(text)
 {
+    // step zero: remove any [\d+] line markers
+    var lns = text.split("\n"), i, last = lns.length;
+    for(i=0; i<last; i++) { lns[i] = lns[i].replace(/^\[\d+\]\s/,""); }
+    text = lns.join("\n");
+
     // step one: strip comments. This is more work
     // than you may think, thanks to quoted strings.
     text = stripComments(text);
@@ -45,7 +57,7 @@ function checkStack(text)
         // If we see an opening character, we chronicle this.
         op = openers.indexOf(chr);
         if(op!==-1 && exclusively===-1) {
-            window.console.log("[op] "+chr+", stack: ["+stack+"]");
+            log("[op] "+chr+", stack: ["+stack+"]");
             push(stack,chr);
             lines.push(line);
 
@@ -60,10 +72,10 @@ function checkStack(text)
         // If we see a closing character, is it the right one?
         cl = closers.indexOf(chr);
         if(cl!==-1) {
-            window.console.log("[cl] "+chr+", stack: ["+stack+"]");
+            log("[cl] "+chr+", stack: ["+stack+"]");
             top = peek(stack);
             if(top === undefined) {
-                error.push("ERROR: saw a "+chr+" on line "+line+" that shouldn't be there.");
+                error.push("ERROR: saw a "+chr+" on line "+line+" that has no corresponding opening anywhere.");
                 stack.push("dummyvalue");
                 break;
             }
@@ -83,7 +95,10 @@ function checkStack(text)
                     pop(stack);
                     pop(lines);
                 } else {
-                    error.push("ERROR: expected to close pair for "+top+", opened on line "+lines[stack.length]+" (snippet: "+text.substring(lines[stack.length]-10, lines[stack.length]+10)+"), found "+chr+" instead, on line "+line);
+                    window.console.log(lines);
+                    window.console.log(stack);
+                    var position = lines[stack.length-1];
+                    error.push("ERROR: expected to close pair for "+top+", opened on line "+position+", found "+chr+" instead, on line "+line);
                     break;
                 }
             }
@@ -93,16 +108,23 @@ function checkStack(text)
 
     if(error.length===0) {
         if(stack.length===0) {
-            error.push("Your stack was checked, and caught no flack!");
+            error.push("This code looks pretty good, stack wise.");
         } else {
             var stl = stack.length;
-            error.push("ERROR: stack still contains "+(stl===1 ? "an" : stl)+" unclosed pair"+(stl===1?'':'s') + " (unclosed pairs start at: "+lines.join(',')+" )");
+            error.push("ERROR: stack still contains "+(stl===1 ? "an" : stl)+" unclosed pair"+(stl===1?'':'s') + " (unclosed pairs have their opening at: "+lines.join(',')+")");
         }
     }
 
-    var stack_color = (stack.length>0 ? "#600" : "#090");
-    document.querySelector('#checkit').style.backgroundColor = stack_color;
-    document.querySelector('#checkit').title = error.join("\n");
+    var stack_color = (stack.length>0 ? "#600" : "#090"),
+        textArea = document.querySelector('#checkit');
+    textArea.style.backgroundColor = stack_color;
+    textArea.title = error.join("\n");
+
+    // add line numbers if the code is bad
+    if(stack_color === "#600") {
+      for(i=0, last=lns.length; i<last; i++) {
+        lns[i] = "["+(i+1)+"] " + lns[i]; }}
+    textArea.value = lns.join("\n");
 }
 
 function space(array) {
@@ -110,25 +132,25 @@ function space(array) {
 }
 
 function push(array, element) {
-    window.console.log(space(array) +  " pushing "+element);
+    log(space(array) +  " pushing "+element);
     array.push(element);
 }
 
 function pop(array) {
     var pop = array.pop();
-    window.console.log(space(array) +  " popped "+pop);
+    log(space(array) +  " popped "+pop);
     return pop;
 }
 
 function peek(array) {
     var peek = array[array.length-1];
-    window.console.log(space(array) +  "peeked at "+peek);
+    log(space(array) +  "peeked at "+peek);
     return peek;
 }
 
 function startExclusive(array, exclusives, chr) {
     var exclusive = exclusives.indexOf(chr);
-    if(exclusive!==-1) { window.console.log(space(array) + "going into exclusive mode for "+chr); }
+    if(exclusive!==-1) { log(space(array) + "going into exclusive mode for "+chr); }
     return exclusive;
 }
 
